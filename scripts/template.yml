@@ -22,9 +22,10 @@ issue_body: |
 
   $language_details
 localization_body: |
-  ## $loc_file
+  <a name="$loc_file"></a>
+  ## ![$loc_file]($flag_url) $country_name ($loc_file)
 
-  ![$loc_file]($flag_url) [Edit $loc_file on Github](../edit/$branch/assets/base/assets/localization/$loc_file)
+  [✏️ Edit $loc_file on Github](../edit/$branch/assets/base/assets/localization/$loc_file)
 
   <details>
 

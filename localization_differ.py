@@ -77,7 +77,7 @@ class LocalizationDiffer:
         maintainers_md = defaultdict(list)
         for filename, users in maintainers.items():
             for user in users:
-                maintainers_md[user].append(f'[{filename}](#{filename.replace(".", "")})')
+                maintainers_md[user].append(f'[{filename}](#{filename})')
 
         # build json templates and missing list for each language
         language_details = []
@@ -93,6 +93,7 @@ class LocalizationDiffer:
                     warnings.append(self.tmpl.missing_warning.safe_substitute(**{"key": key2}))
 
             language_details.append(self.tmpl.localization_body.safe_substitute(**{
+                "country_name": country_info.name,
                 "loc_file": key,
                 "flag_url": flag_url,
                 "branch": self.settings.branch,
