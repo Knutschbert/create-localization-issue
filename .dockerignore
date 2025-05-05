@@ -1,3 +1,6 @@
 *
 !Dockerfile
 !entrypoint.py
+!requirements.txt
+!localization_differ.py
+!scripts/template.yml

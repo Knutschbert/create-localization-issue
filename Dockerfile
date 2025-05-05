@@ -12,5 +12,14 @@ FROM cicirello/pyaction:4
 # FROM ghcr.io/cicirello/pyaction:4
 # FROM ghcr.io/cicirello/pyaction:3
 
+# RUN ls
+# RUN git rev-parse --is-inside-work-tree
+# RUN git config --global --add safe.directory /github/workspace
+
+COPY requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
+
+COPY scripts/template.yml /scripts/template.yml
+COPY localization_differ.py /localization_differ.py
 COPY entrypoint.py /entrypoint.py
 ENTRYPOINT ["/entrypoint.py"]

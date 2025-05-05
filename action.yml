@@ -1,27 +1,51 @@
-# Make sure to change the action name here (must be unique).
-# Update the rest as needed.
-name: 'unique-action-goes-here'
-description: 'BRIEF DESCRIPTION OF YOUR ACTION'
-branding: # Look at documentation for branding options/requirements. These are my favorites.
+name: 'create-localization-issue'
+description: 'Create an issue when new localization data is available'
+branding:
   icon: 'book-open'
   color: 'green'
 inputs:
-  input-one:
-    description: 'Description of input-one'
+  base-dir:
+    description: 'Directory containing localization files'
     required: false
-    default: 'default value goes here'
-  input-two:
-    description: 'Description of input-two'
+    default: 'assets/base/assets/localization'
+  base-file:
+    description: 'Native translation file'
     required: false
-    default: 'default value goes here'
+    default: 'en.json'
+  branch:
+    description: 'Branch to operate on'
+    required: false
+    default: 'main'
+  commit:
+    description: 'Old commit to check against. Defaults to last'
+    required: false
+    default: 'HEAD^'
+  maintainers:
+    description: 'Path to maintainers JSON file'
+    required: false
+    default: 'localization_maintainers.json'
+  template:
+    description: 'Path to YAML markdown template'
+    required: false
+    default: '/scripts/template.yml'
 outputs:
-  output-one:
-    description: 'Description of output-one'
-  output-two:
-    description: 'Description of output-two'
+  issue-title:
+    description: 'Generated title'
+  issue-body:
+    description: 'Generated localization diff body'
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.input-one }}
-    - ${{ inputs.input-two }}
+    - --base_dir
+    - ${{ inputs.base-dir }}
+    - --base_file
+    -  ${{ inputs.base-file }}
+    - --branch
+    -  ${{ inputs.branch }}
+    - --commit
+    -  ${{ inputs.commit }}
+    - --maintainers
+    -  ${{ inputs.maintainers }}
+    - --template
+    -  ${{ inputs.template }}
