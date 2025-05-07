@@ -48,7 +48,7 @@ jobs:
         uses: Knutschbert/create-localization-issue@devel
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          base-dir: "assets\ue4ss_installer_gui"
+          base-dir: "assets/pixy-mood-tracker-app"
           base-file: "en.json"
           branch: ${{ github.ref }}
           commit: ${{ github.event.inputs.commit }}
