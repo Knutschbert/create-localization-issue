@@ -61,7 +61,7 @@ outputs:
     description: 'List of issue comments'
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: './../../../Dockerfile'
   args:
     - --base_dir
     - ${{ inputs.base-dir }}
