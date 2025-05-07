@@ -75,7 +75,7 @@ runs:
 
     - name: Run Python action (local)
       id: run_action
-      uses: ./
+      uses: ./docker-action-folder
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
