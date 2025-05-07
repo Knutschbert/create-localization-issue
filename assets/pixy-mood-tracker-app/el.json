@@ -59,7 +59,6 @@
   "passcode_forgot_description": "Δυστυχώς, δεν μπορούμε να επαναφέρουμε τον κωδικό πρόσβασής σας. Εάν χάσατε τον κωδικό πρόσβασής σας, δεν υπάρχει τρόπος να ανακτήσετε τα δεδομένα σας.",
   "passcode_forgot_cancel": "Ματαίωση",
   "passcode_forgot_reset": "Διαγραφή όλων των δεδομένων μου",
-  "passcode_forgot_reset_confirm": "Είσαι σίγουρος?",
   "passcode_forgot_reset_confirm_description": "Αυτό θα διαγράψει όλα τα δεδομένα και τις ρυθμίσεις σας για αυτήν την εφαρμογή.",
   "passcode_forgot_reset_confirm_reset": "Ναι, διαγράψτε όλα τα δεδομένα μου",
   "passcode_forgot_reset_confirm_cancel": "Ματαίωση",

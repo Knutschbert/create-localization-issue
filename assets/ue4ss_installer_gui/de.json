@@ -14,7 +14,6 @@
   "install_developer_version_text_label": "Entwickler-Version installieren (falls verfügbar)",
   "install_failed_message_text": "Installation fehlgeschlagen",
   "install_from_zip_button_text": "Aus ZIP installieren",
-  "install_portable_version_text_label": "Portable Version installieren (falls verfügbar)",
   "install_succeeded_message_text": "Installation erfolgreich",
   "installing_from_zip_ue4ss_task_text": "UE4SS wird aus einer ZIP-Datei installiert",
   "installing_ue4ss_step_text": "UE4SS wird installiert",

@@ -224,7 +224,6 @@
   "statistics_mood_chart_description": "您在 {{date}} 的情绪趋势",
   "statistics_mood_peaks_positive_description": "{{date}}最好的日子",
   "statistics_mood_peaks_negative_description": "{{date}}最糟糕的日子",
-  "year_in_pixels": "像素年",
   "year_in_pixels_description": "我在 {{date}} 每天的平均心情",
   "mood_count": "心情计数",
   "mood_count_description": "您在 {{date}} 的情绪分布",
