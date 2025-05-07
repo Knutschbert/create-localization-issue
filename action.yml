@@ -97,8 +97,10 @@ runs:
 
     - name: Write comments to file
       shell: bash
+      env:
+        RAW_COMMENTS: ${{ steps.run_action.outputs.comments }}
       run: |
-        echo "${{ steps.run_action.outputs.comments }}" | jq '.' > comments.json
+        printf '%s' "$RAW_COMMENTS" > comments.json
 
     - name: Create issue comments
       shell: bash
