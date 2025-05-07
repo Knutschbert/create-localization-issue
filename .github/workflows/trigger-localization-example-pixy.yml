@@ -45,7 +45,7 @@ jobs:
 
       - name: Run Python Action from external repo
         id: run_action
-        uses: Knutschbert/create-localization-issue@devel
+        uses: Knutschbert/create-localization-issue@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           base-dir: "assets/pixy-mood-tracker-app"
