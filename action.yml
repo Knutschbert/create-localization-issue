@@ -71,20 +71,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Retrieve workflow version
-      id: workflow-version
-      uses: canonical/get-workflow-version-action@v1
-      with:
-        repository-name: Knutschbert/create-localization-issue
-        file-name: action.yaml
-
-    - name: Check out actions using workflow version
-      uses: actions/checkout@v4
-      with:
-        repository: Knutschbert/create-localization-issue
-        ref: ${{ steps.workflow-version.outputs.sha }}
-        path: loc-actions
-
     - name: Run Python action (local)
       id: run_action
       uses: ./loc-actions/.github/actions/docker-action-folder
