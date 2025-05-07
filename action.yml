@@ -96,6 +96,7 @@ runs:
           localization, automated, help wanted
 
     - name: Write comments to file
+      shell: bash
       run: |
         echo '${{ steps.run_action.outputs.comments }}' > comments.json
 
