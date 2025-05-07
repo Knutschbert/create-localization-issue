@@ -65,10 +65,6 @@ outputs:
   comments:
     description: 'List of issue comments'
 
-env:
-  GITHUB_ACTION_REF2: ${{ github.action_ref  }}
-  GITHUB_ACTION_PATH2: ${{ github.action_path }}
-
 runs:
   using: "composite"
   steps:
@@ -85,7 +81,7 @@ runs:
 
     - name: Run Python action (local)
       id: run_action
-      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@devel
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ github.action_path }}
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
