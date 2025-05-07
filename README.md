@@ -1,6 +1,10 @@
 # create-localization-issue
+
 A Github Action to generate Issues when base localization file is updated.
 Generated Issues feature translator @ mentions as well as JSON templates which translators can directly use.
+
+[Examples of generated issues](https://github.com/Knutschbert/create-localization-issue/issues?q=label%3AExample%20)
+
 
 This action assumes that localization files are simple JSON files with a dictionary containing string key-value pairs (`Dict[str,str]`).
 

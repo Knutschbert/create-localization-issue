@@ -1,7 +1,7 @@
 name: 'create-localization-issue'
-description: 'Create an issue when new localization data is available'
+description: 'Create a localization help request issue with helpful templates for translators.'
 branding:
-  icon: 'flag-checkered'
+  icon: 'at-sign'
   color: 'green'
 
 inputs:
