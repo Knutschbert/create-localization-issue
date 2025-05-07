@@ -68,9 +68,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v4
+    - name: Get current tag/branch
+      id: get_ref
+      run: |
+        echo "ref=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_OUTPUT
     - name: Run Python action (local)
       id: run_action
-      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@devel
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ steps.get_ref.outputs.ref }}
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
