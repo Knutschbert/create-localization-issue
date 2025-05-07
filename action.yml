@@ -102,6 +102,7 @@ runs:
         ls -l comments/*.*
           
     - name: Post issue comments from markdown files
+      shell: bash
       env:
         ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
