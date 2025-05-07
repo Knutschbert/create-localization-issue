@@ -95,14 +95,17 @@ runs:
         labels: |
           localization, automated, help wanted
 
+    - name: Write comments to file
+      run: |
+        echo '${{ steps.run_action.outputs.comments }}' > comments.json
+
     - name: Create issue comments
       shell: bash
       env:
-        COMMENTS: ${{ steps.run_action.outputs.comments }}
         ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
       run: |
-        echo "$COMMENTS" | jq -c '.[]' | while read -r comment_json; do
+        cat comments.json | jq -c '.[]' | while read -r comment_json; do
           comment=$(echo "$comment_json" | jq -r '.')
           tmpfile=$(mktemp)
           jq -n --arg body "$comment" '{body: $body}' > "$tmpfile"
