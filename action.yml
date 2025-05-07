@@ -68,11 +68,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        ref: ${{ inputs.branch }}
-
     - name: Run Python action (local)
       id: run_action
       uses: ./docker-action-folder
