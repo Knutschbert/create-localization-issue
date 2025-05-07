@@ -1,0 +1,20 @@
+{
+    "ar.json": ["ar_chad"],
+    "cs.json": ["cs_chad"],
+    "da.json": ["da_chad"],
+    "de.json": ["de_chad", "@knutschbert"],
+    "el.json": ["el_chad"],
+    "en.json": ["en_chad"],
+    "es.json": ["es_chad"],
+    "fi.json": ["fi_chad"],
+    "fr.json": ["fr_chad"],
+    "he.json": ["he_chad"],
+    "hi.json": ["hi_chad"],
+    "hr.json": ["hr_chad"],
+    "hu.json": ["hu_chad"],
+    "id.json": ["id_chad"],
+    "it.json": ["it_chad"],
+    "ja.json": ["ja_chad"],
+    "ko.json": ["ko_chad"],
+    "ua.json": ["@knutschbert"]
+}
