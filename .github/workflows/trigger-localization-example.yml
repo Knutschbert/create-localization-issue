@@ -1,0 +1,39 @@
+name: Trigger Localization Example Workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      use-pixy:
+        description: "Use Pixy workflow instead of Installer?"
+        required: true
+        default: "false"
+        type: boolean
+      base-dir:
+        description: "Base directory path to pass as input"
+        required: true
+        type: string
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Choose workflow to trigger
+        id: choose
+        run: |
+          if [ "${{ inputs.use-pixy }}" = "true" ]; then
+            echo "workflow_file=localization-issue-pixy.yml" >> $GITHUB_OUTPUT
+          else
+            echo "workflow_file=localization-issue-installer.yml" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger selected workflow on examples branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_FILE: ${{ steps.choose.outputs.workflow_file }}
+          BASE_DIR: ${{ inputs.base-dir }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_FILE/dispatches \
+            -d "{\"ref\":\"examples\",\"inputs\":{\"base-dir\":\"$BASE_DIR\"}}"
