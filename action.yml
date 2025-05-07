@@ -102,7 +102,7 @@ runs:
       env:
         COMMENTS: ${{ steps.run_action.outputs.comments }}
         ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
       run: |
         echo "$COMMENTS" | jq -c '.[]' | while read -r comment_json; do
           comment=$(echo "$comment_json" | jq -r '.')
