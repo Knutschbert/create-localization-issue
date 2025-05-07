@@ -1,83 +1,115 @@
 name: 'create-localization-issue'
 description: 'Create an issue when new localization data is available'
 branding:
-  icon: 'book-open'
+  icon: 'flag-checkered'
   color: 'green'
-inputs:
-  base-dir:
-    description: 'Directory containing localization files'
-    required: false
-    default: 'assets/base/assets/localization'
-  base-file:
-    description: 'Native translation file'
-    required: false
-    default: 'en.json'
-  branch:
-    description: 'Branch to operate on'
-    required: false
-    default: 'main'
-  commit:
-    description: 'Old commit to check against. Defaults to last'
-    required: false
-    default: 'HEAD^'
-  maintainers:
-    description: 'Path to maintainers JSON file'
-    required: false
-    default: 'localization_maintainers.json'
-  template:
-    description: 'Path to YAML markdown template'
-    required: false
-    default: '/scripts/template.yml'
-  disable-mentions:
-    description: 'Output mentions as Text (without @)'
-    required: false
-    type: choice
-    options:
-    - 'True'
-    - 'False'
-    default: 'False'
-  js-patch:
-    description: 'use git diff for JSON templates (for large repos)'
-    required: false
-    type: choice
-    options:
-    - 'True'
-    - 'False'
-    default: 'False'
-  use-comments:
-    description: 'Show templates as comments'
-    required: false
-    type: choice
-    options:
-    - 'True'
-    - 'False'
-    default: 'False'
-outputs:
-  issue-title:
-    description: 'Generated title'
-  issue-body:
-    description: 'Generated localization diff body'
-  comments:
-    description: 'List of issue comments'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - --base_dir
-    - ${{ inputs.base-dir }}
-    - --base_file
-    -  ${{ inputs.base-file }}
-    - --branch
-    -  ${{ inputs.branch }}
-    - --commit
-    -  ${{ inputs.commit }}
-    - --maintainers
-    -  ${{ inputs.maintainers }}
-    - --template
-    -  ${{ inputs.template }}
-    - --disable_mentions
-    -  ${{ inputs.disable-mentions }}
-    - --js_patch
-    -  ${{ inputs.js-patch }}
-    - --use_comments
-    -  ${{ inputs.use-comments }}
+on:
+  workflow_call:
+    inputs:
+      base-dir:
+        description: 'Directory containing localization files'
+        required: false
+        default: 'assets/base/assets/localization'
+      base-file:
+        description: 'Native translation file'
+        required: false
+        default: 'en.json'
+      branch:
+        description: 'Branch to operate on'
+        required: false
+        default: 'main'
+      commit:
+        description: 'Old commit to check against. Defaults to last'
+        required: false
+        default: 'HEAD^'
+      maintainers:
+        description: 'Path to maintainers JSON file'
+        required: false
+        default: 'localization_maintainers.json'
+      template:
+        description: 'Path to YAML markdown template'
+        required: false
+        default: '/scripts/template.yml'
+      disable-mentions:
+        description: 'Output mentions as Text (without @)'
+        required: false
+        type: choice
+        options:
+        - 'True'
+        - 'False'
+        default: 'False'
+      js-patch:
+        description: 'use git diff for JSON templates (for large repos)'
+        required: false
+        type: choice
+        options:
+        - 'True'
+        - 'False'
+        default: 'False'
+      use-comments:
+        description: 'Show templates as comments'
+        required: false
+        type: choice
+        options:
+        - 'True'
+        - 'False'
+        default: 'False'
+    outputs:
+      issue-title:
+        description: 'Generated title'
+      issue-body:
+        description: 'Generated localization diff body'
+      comments:
+        description: 'List of issue comments'
+
+jobs:
+  create-localization-request:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Run Python action (local)
+        id: run_action
+        uses: ./
+        with:
+          base-dir: ${{ inputs.base-dir }} 
+          base-file: ${{ inputs.base-file }}
+          branch: ${{ github.ref }}
+          commit: ${{ inputs.commit }}
+          maintainers: ${{ inputs.maintainers }}
+          template: ${{ inputs.template }}
+          disable-mentions: ${{ inputs.disable-mentions }}
+          js-patch: ${{ inputs.js-patch }}
+          use-comments: ${{ inputs.use-comments }}
+
+      - name: Create GitHub issue
+        id: create_issue
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ steps.run_action.outputs.issue-title }}
+          body: ${{ steps.run_action.outputs.issue-body }}
+          labels: |
+            localization, automated, help wanted
+
+      - name: Create issue comments
+        shell: bash
+        env:
+          COMMENTS: ${{ steps.run_action.outputs.comments }}
+          ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$COMMENTS" | jq -c '.[]' | while read -r comment_json; do
+            comment=$(echo "$comment_json" | jq -r '.')
+            tmpfile=$(mktemp)
+            jq -n --arg body "$comment" '{body: $body}' > "$tmpfile"
+            gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/comments \
+              --method POST \
+              --header "Authorization: Bearer $GITHUB_TOKEN" \
+              --header "Accept: application/vnd.github.v3+json" \
+              --input "$tmpfile"
+            rm "$tmpfile"
+          done
