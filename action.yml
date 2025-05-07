@@ -54,6 +54,10 @@ on:
         - 'True'
         - 'False'
         default: 'False'
+      GITHUB_TOKEN:
+        description: 'Token'
+        required: true
+        default: 'False'
     outputs:
       issue-title:
         description: 'Generated title'
@@ -89,7 +93,7 @@ jobs:
         id: create_issue
         uses: dacbd/create-issue-action@main
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ inputs.GITHUB_TOKEN }}
           title: ${{ steps.run_action.outputs.issue-title }}
           body: ${{ steps.run_action.outputs.issue-body }}
           labels: |
