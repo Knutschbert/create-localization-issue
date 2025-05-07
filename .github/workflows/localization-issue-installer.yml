@@ -48,8 +48,8 @@ jobs:
         uses: Knutschbert/create-localization-issue@devel
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # base-dir: ""
-          # base-file: ""
+          base-dir: "assets\ue4ss_installer_gui"
+          base-file: "en.json"
           branch: ${{ github.ref }}
           commit: ${{ github.event.inputs.commit }}
           maintainers: "translators.json"
