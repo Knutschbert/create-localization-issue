@@ -112,5 +112,5 @@ runs:
             --method POST \
             --header "Authorization: Bearer $GITHUB_TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --raw-field body<"$file"
+            --raw-field body="$(< "$file")"
         done
