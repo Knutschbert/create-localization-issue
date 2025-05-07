@@ -24,5 +24,3 @@ COPY scripts/template.yml /scripts/template.yml
 COPY localization_differ.py /localization_differ.py
 COPY entrypoint.py /entrypoint.py
 ENTRYPOINT ["/entrypoint.py"]
-
-RUN LS /github/workspace
