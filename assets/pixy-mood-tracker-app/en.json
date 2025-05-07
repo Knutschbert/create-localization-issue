@@ -355,11 +355,12 @@
   "log_emotion_secure": "Secure",
   "log_emotion_serene_description": "You feel untroubled and peaceful",
   "log_emotion_serene": "Serene",
-  "log_emotion_shocked_description": "You feel surprised and upset",
   "log_emotion_shocked": "Shocked",
   "log_emotion_sleepy_description": "You feel the effect of sleep",
   "log_emotion_sleepy": "Sleepy",
   "log_emotion_spent_description": "You feel used and unable to be used again",
   "log_emotion_spent": "Spent",
-  "log_emotion_stressed_description": "You feel mental or emotional tension"
+  "i_was_renamed": "You feel mental or emotional tension",
+  "i_was_added": "Some text that was added",
+  "i_was_added_too": "Some text that was added"
 }
