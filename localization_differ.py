@@ -140,7 +140,7 @@ class LocalizationDiffer:
                 print('adding comment')
         
         for k, v in self.comments_dict.items():
-            file_name = f'comments/{key}.md'
+            file_name = f'comments/{k}.md'
             with open(file_name, 'w', encoding='utf-8') as file:
                 print('Saved', file_name)
                 file.write(v)
