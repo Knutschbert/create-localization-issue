@@ -71,11 +71,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Dump vars context
-      env:
-        VARS_JSON: ${{ toJSON(vars) }}
-      run: echo "${VARS_JSON}"
-
     - name: Run Python action (local)
       id: run_action
       uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ inputs.sub-ref }}
