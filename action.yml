@@ -85,6 +85,11 @@ runs:
         js-patch: ${{ inputs.js-patch }}
         use-comments: ${{ inputs.use-comments }}
 
+    - name: List files
+      shell: bash
+      run: |
+        ls -l comments/*.*
+
     - name: Create GitHub issue
       id: create_issue
       uses: dacbd/create-issue-action@main

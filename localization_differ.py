@@ -45,6 +45,7 @@ class LocalizationDiffer:
         self.settings = settings
         self.base_file_path = Path(settings.base_dir) / settings.base_file
         self.base_file_path_fwd = str(self.base_file_path).replace('\\', '/')
+        self.comments_dict = {}
         self.comments = []
         self.tmpl = {}
         self.prev_en = {}
@@ -135,8 +136,14 @@ class LocalizationDiffer:
             # self.comments.append(json.dumps(language_template, ensure_ascii=False))
             if self.settings.use_comments:
                 self.comments.append(language_template)
+                self.comments_dict[key] = language_template
                 print('adding comment')
         
+        for k, v in self.comments_dict.items():
+            file_name = f'comments/{key}.md'
+            with open(file_name) as file:
+                print('Saved', file_name)
+                file.write(v)
         # build main issue body    
         git_rev_head = os.popen("git rev-parse HEAD").read()
 
