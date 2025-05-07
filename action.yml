@@ -93,6 +93,7 @@ runs:
         disable-mentions: ${{ inputs.disable-mentions }}
         js-patch: ${{ inputs.js-patch }}
         use-comments: ${{ inputs.use-comments }}
+        labels: ${{ inputs.labels }}
 
 
     - name: Create GitHub issue

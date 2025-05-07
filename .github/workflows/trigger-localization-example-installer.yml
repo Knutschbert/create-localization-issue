@@ -31,6 +31,10 @@ on:
         type: choice
         options: [ 'True', 'False' ]
         default: 'True'
+      labels:
+        description: 'Issue, labels'
+        required: false
+        default: 'localization, automated, help wanted'
 
 jobs:
   create-localization-request:
@@ -57,3 +61,4 @@ jobs:
           disable-mentions: ${{ github.event.inputs.disable-mentions }}
           js-patch: ${{ github.event.inputs.js-patch }}
           use-comments: ${{ github.event.inputs.use-comments }}
+          labels: ${{ github.event.inputs.labels }}
