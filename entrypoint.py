@@ -32,17 +32,20 @@ if __name__ == "__main__" :
     parser.add_argument("-c", "--commit", default="afea18f6f1cda5c8db8e31dfec8edf7e04624f90", help="Old commit to check against. Defaults to last")
     parser.add_argument("-m", "--maintainers", default="localization_maintainers.json", help="Path fo maintainers JSON")
     parser.add_argument("-t", "--template", default=".github/scripts/template.yml", help="Path to YAML markdown template")
+    parser.add_argument("-s", "--disable_mentions", default="false", help="Disable mention links")
+    parser.add_argument("-p", "--js_patch", default="false", help="Show git diff as json template (for larger repos)")
+    parser.add_argument("-u", "--use_comments", default="false", help="Show templates as comments")
     # parser.add_argument("-", "--", default="", help="")
 
     args = parser.parse_args()
     settings = Settings(**args.__dict__)
 
-    with open(settings.maintainers, encoding="utf-8") as f:
-        data =  json.load(f)
-        print('maintainers', data)
-    with open(settings.base_dir + "/" + settings.base_file, encoding="utf-8") as f:
-        data =  json.load(f)
-        print('basefile', data)
+    # with open(settings.maintainers, encoding="utf-8") as f:
+    #     data =  json.load(f)
+    #     print('maintainers', data)
+    # with open(settings.base_dir + "/" + settings.base_file, encoding="utf-8") as f:
+    #     data =  json.load(f)
+    #     print('basefile', data)
 
     # EN_PATH = Path(settings.base_dir) / settings.base_file
     # EN_PATH_F = str(EN_PATH).replace('\\', '/')
@@ -52,6 +55,9 @@ if __name__ == "__main__" :
             settings.commit = "HEAD^^"
         else:
             settings.commit = "HEAD^"
+    settings.disable_mentions = settings.disable_mentions.lower() == 'true'
+    settings.js_patch = settings.js_patch.lower() == 'true'
+    settings.use_comments = settings.use_comments.lower() == 'true'
 
     
     # if "GITHUB_WORKSPACE" in os.environ :
@@ -66,7 +72,7 @@ if __name__ == "__main__" :
 
     processor = LocalizationDiffer(settings)
     processor.initialize()
-    issue_body, issue_title = processor.process()
+    issue_body, issue_title, comments = processor.process()
 
     # This is how you produce workflow outputs.
     # Make sure corresponds to output variable names in action.yml
@@ -74,12 +80,13 @@ if __name__ == "__main__" :
     #     with open(os.environ["GITHUB_OUTPUT"], "a", encoding='utf-8') as f :
     #         print("{0}={1}".format("issue-title", "issue_title"), file=f)
     #         print("{0}={1}".format("issue-body", issue_body), file=f)
-    def write_output(name, value):
+    def write_output(name, value, is_json=False):
         delimiter = uuid.uuid4().hex  # a unique delimiter
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding='utf-8') as f:
             f.write(f"{name}<<{delimiter}\n")
-            f.write(f"{value}\n")
+            f.write(f"{is_json and json.dumps(value, ensure_ascii=False) or value}\n")
             f.write(f"{delimiter}\n")
 
     write_output("issue-title", issue_title)
     write_output("issue-body", issue_body)
+    write_output("comments", comments, True)

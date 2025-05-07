@@ -28,11 +28,37 @@ inputs:
     description: 'Path to YAML markdown template'
     required: false
     default: '/scripts/template.yml'
+  disable-mentions:
+    description: 'Output mentions as Text (without @)'
+    required: false
+    type: choice
+    options:
+    - 'True'
+    - 'False'
+    default: 'False'
+  js-patch:
+    description: 'use git diff for JSON templates (for large repos)'
+    required: false
+    type: choice
+    options:
+    - 'True'
+    - 'False'
+    default: 'False'
+  use-comments:
+    description: 'Show templates as comments'
+    required: false
+    type: choice
+    options:
+    - 'True'
+    - 'False'
+    default: 'False'
 outputs:
   issue-title:
     description: 'Generated title'
   issue-body:
     description: 'Generated localization diff body'
+  comments:
+    description: 'List of issue comments'
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -49,3 +75,9 @@ runs:
     -  ${{ inputs.maintainers }}
     - --template
     -  ${{ inputs.template }}
+    - --disable_mentions
+    -  ${{ inputs.disable-mentions }}
+    - --js_patch
+    -  ${{ inputs.js-patch }}
+    - --use_comments
+    -  ${{ inputs.use-comments }}

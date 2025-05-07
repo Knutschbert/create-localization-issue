@@ -11,6 +11,9 @@ import glob
 from collections import defaultdict
 import pycountry
 import argparse
+import subprocess
+import tempfile
+from pprint import pprint
 
 @dataclass
 class LocalizationTemplates:
@@ -31,6 +34,9 @@ class Settings:
     commit: str
     maintainers: str
     template: str
+    disable_mentions: bool
+    js_patch: bool
+    use_comments: bool
 
 class LocalizationDiffer:
 
@@ -39,12 +45,16 @@ class LocalizationDiffer:
         self.settings = settings
         self.base_file_path = Path(settings.base_dir) / settings.base_file
         self.base_file_path_fwd = str(self.base_file_path).replace('\\', '/')
+        self.comments = []
         self.tmpl = {}
         self.prev_en = {}
         self.current_en = {}
         self.comparison = {}
-        self.changes = []
+        self.changes = [[] for i in range(4)]
+        self.language_map = {}  # type: Dict[str, Language]
+        self.loc_files = []
         print('base path', self.base_file_path_fwd)
+        pprint(self.settings)
     
     def initialize(self) -> bool:
         if not self.base_file_path.exists():
@@ -57,10 +67,21 @@ class LocalizationDiffer:
             print(f"Failed to load previous {self.settings.base_file}: {e}")
             return
         
+        for loc_file in glob.glob(self.settings.base_dir+"/*.json"):
+            if loc_file.endswith(os.path.basename(self.base_file_path)):
+                continue
+            self.loc_files.append(loc_file)
+            base_name = os.path.basename(loc_file)
+            lang = base_name.split('.')[0].upper().split('_')[0]
+            language, _ = self.get_language_or_country(lang)
+            self.language_map[base_name] = language
+        # self.loc_files = [x for x in glob.glob(self.settings.base_dir+"/*.json") if not x.endswith(os.path.basename(self.base_file_path))]
+        
         self.tmpl = self.load_templates()
         self.current_en = self.load_json(self.base_file_path)
-        self.comparison = self.compare_dicts_new(self.prev_en, self.current_en)
-        self.changes = self.format_changes_str()
+        self.lang_images = self.load_json("/scripts/language_images.json")
+        self.comparison = self.compare_dicts(self.prev_en, self.current_en)
+        self.format_changes_str()
 
         if not self:
             print(f"No changes in {self.settings.base_file} content.")
@@ -77,14 +98,22 @@ class LocalizationDiffer:
         maintainers_md = defaultdict(list)
         for filename, users in maintainers.items():
             for user in users:
-                maintainers_md[user].append(f'[{filename}](#{filename})')
+                if self.settings.disable_mentions:
+                    user = user[1:]
+                flag_link, country_info = self.get_language_flag_from_filename(filename, True)
+                maintainers_md[user].append(f'<a href="#user-content-{filename}">{flag_link}</a>')
+                # maintainers_md[user].append(f'[{filename}](#user-content-{filename})')
 
         # build json templates and missing list for each language
         language_details = []
         json_templates = self.format_lang_changes_str()    
         
         for key, (template_str, missing) in json_templates.items():
-            flag_url, country_info = self.get_language_flag_from_filename(key)
+            base_name = os.path.basename(key)
+            flag_url, country_info = self.get_language_flag_from_filename(base_name)
+
+            if self.settings.js_patch:
+                template_str = self.git_diff_against_head(".", key, template_str)
 
             warnings = []
             if len(missing):
@@ -92,44 +121,104 @@ class LocalizationDiffer:
                 for key2 in missing:
                     warnings.append(self.tmpl.missing_warning.safe_substitute(**{"key": key2}))
 
-            language_details.append(self.tmpl.localization_body.safe_substitute(**{
-                "country_name": country_info.name,
-                "loc_file": key,
-                "flag_url": flag_url,
+            language_template = self.tmpl.localization_body.safe_substitute(**{
+                "base_dir": self.settings.base_dir,
+                "country_name": country_info and country_info.name or "",
+                "loc_file": base_name,
+                "flag_url": flag_url and flag_url or "",
                 "branch": self.settings.branch,
                 "json_template": template_str,
                 "warnings": "\n\n".join(warnings)
-            }))
+            })
+            language_details.append(language_template)
+
+            # self.comments.append(json.dumps(language_template, ensure_ascii=False))
+            if self.settings.use_comments:
+                self.comments.append(language_template)
+                print('adding comment')
         
         # build main issue body    
         git_rev_head = os.popen("git rev-parse HEAD").read()
 
         issue_title = "🔤 Localization update needed"
+
+        language_details_str = ""
+        if not self.settings.use_comments:
+            language_details_str = "\n".join(language for language in language_details)
+            print('adding details')
         
         issue_body = self.tmpl.issue_body.safe_substitute(**{
             "url_base_locfile": f"[{self.settings.base_file}](../blob/{self.settings.branch}/{self.base_file_path_fwd})",
             "branch": self.settings.branch,
-            "url_start_commit": self.get_commit_url(self.settings.commit),
-            "url_end_commit": self.get_commit_url(git_rev_head),
-            "change_summary": "\n".join(change for change in self.changes),
+            "url_start_commit": self.settings.commit,
+            "url_end_commit": git_rev_head,
+            "changes_renamed": "\n".join(change for change in self.changes[0]),
+            "changes_added": "\n".join(change for change in self.changes[1]),
+            "changes_changed": "\n".join(change for change in self.changes[2]),
+            "changes_removed": "\n".join(change for change in self.changes[3]),
             "user_mentions": "\n".join([f' - {k}: {", ".join(v)}' for k, v in maintainers_md.items()]),
-            "language_details": "\n".join(language for language in language_details)
+            "language_details": language_details_str
         })
 
-        return issue_body, issue_title
+        return issue_body, issue_title, self.comments
+    
+    def git_diff_against_head(self, repo_path: str, file_path: str, edited_content: str):
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp_file:
+            tmp_file.write(edited_content)
+            tmp_file_path = tmp_file.name
 
-    def get_language_flag_from_filename(self, filename: str):
-        # tries to parse country code from language file name
-        language_code = filename.split('.')[0].upper().split('_')[0]
-        country_code = language_code
-        country_info = pycountry.languages.get(alpha_2=language_code)
-        if country_info is not None:
-            country_code = country_info.alpha_2
-            country = pycountry.countries.search_fuzzy(country_info.alpha_3)
+        try:
+            result = subprocess.run(
+                ["git", "-C", repo_path, "diff", 
+                 "--unified=1", 
+                 "--patch", 
+                 "--no-index", 
+                 "--", file_path, 
+                 tmp_file_path],
+                capture_output=True,
+                text=True
+            )
+            return result.stdout
+        finally:
+            os.remove(tmp_file_path)
+        
+    def get_language_or_country(self, lang: str) -> str:
+        # Try to get the language by alpha2/3 first
+        language = None
+        country = None
+        countries = None
+        try:
+            if len(lang) in (2, 3):
+                language = pycountry.languages.get(**{f'alpha_{len(lang)}': lang})
+        except Exception as ex:
+            print(f'Exception {ex}')
+
+        # Try to get alpha3 from country name ad query as lang
+        if language is None:
+            if len(lang) in (2, 3):
+                country = pycountry.countries.get(**{f'alpha_{len(lang)}': lang})
             if country is not None:
-                country_code = country[0].alpha_2
-        flag_url = f"https://raw.githubusercontent.com/exyte/FlagAndCountryCode/refs/heads/main/Sources/FlagAndCountryCode/Resources/CountryFlags.xcassets/{country_code}.imageset/{country_code}.png"
-        return flag_url, country_info
+                language = pycountry.languages.get(alpha_3=country.alpha_3)
+        else:
+            print(f'normal {language.name}')
+
+        return language, country
+    
+    def get_language_flag_from_filename(self, filename: str, small=False):
+        # split locales like en_us
+        flag_url = None
+        # lang = filename.split('.')[0].upper().split('_')[0]
+        # language, _ = self.get_language_or_country(lang)
+        language = self.language_map.get(os.path.basename(filename), None)
+        if language is not None:
+            if language.name in self.lang_images:
+                size_attr = small and f'height="20"' or ''
+                # flag_url = f"https://raw.githubusercontent.com/exyte/FlagAndCountryCode/refs/heads/main/Sources/FlagAndCountryCode/Resources/CountryFlags.xcassets/{country_code}.imageset/{country_code}.png"
+                flag_url = f'<img {size_attr} alt="{language.name}" src="https://upload.wikimedia.org/wikipedia/commons/thumb/{self.lang_images[language.name]}" style="border-radius: 50%">'
+            else:
+                size_attr = small and f'height="20' or 'width="50"'
+                flag_url = f'<img {size_attr} alt="{language.name}" src="https://unpkg.com/language-icons/icons/{language.alpha_2}.svg" style="border-radius: 50%">'
+        return flag_url, language
 
     def get_commit_url(self, SHA: str):
         return f"[{SHA[:6]}](../commit/{SHA.replace('^','')})"
@@ -155,7 +244,7 @@ class LocalizationDiffer:
         prev_content = os.popen(f"git show {self.settings.commit}:{self.base_file_path_fwd}").read()
         return json.loads(prev_content)
     
-    def compare_dicts_new(self, old: Dict[str,str], new: Dict[str,str]):
+    def compare_dicts(self, old: Dict[str,str], new: Dict[str,str]):
         old_s = set(old)
         new_s = set(new)
         added = new_s - old_s
@@ -180,7 +269,6 @@ class LocalizationDiffer:
 
     def format_changes_str(self):
         # Format changes to main file
-        changes = []
         added, removed, changed, renamed = self.comparison
 
         change_handlers = [
@@ -190,24 +278,23 @@ class LocalizationDiffer:
             (removed, self.tmpl.change_removed, lambda k: {"key": k}),
         ]
 
-        for items, template, fn in change_handlers:
+        for idx, (items, template, fn) in enumerate(change_handlers):
             for item in items:
                 if isinstance(item, tuple):
-                    changes.append(template.safe_substitute(**fn(*item)))
+                    self.changes[idx].append(template.safe_substitute(**fn(*item)))
                 else:
-                    changes.append(template.safe_substitute(**fn(item)))
-        return changes
+                    self.changes[idx].append(template.safe_substitute(**fn(item)))
 
     def format_lang_changes_str(self):
         # Create language-specific json template
         templates = {}
         added_en, removed_en, changed_en, renamed_en = self.comparison
-        for file_name in glob.glob(self.settings.base_dir+"/*.json"):
+        for file_name in self.loc_files:
             if file_name.endswith(self.settings.base_file):
                 continue
 
             js_data = self.load_json(file_name)
-            added, removed, _, renamed = self.compare_dicts_new(js_data, self.current_en)
+            added, removed, _, renamed = self.compare_dicts(js_data, self.current_en)
             
             # use new json structure and populate with localized values. Also rename keys
             template = {k: js_data.get(k, self.current_en[k]) for k,v in self.current_en.items()}
@@ -216,7 +303,7 @@ class LocalizationDiffer:
                     template[name_new] = js_data[name_old]
 
             # Add comments to template
-            template_str = json.dumps(template, indent=4, ensure_ascii=False)
+            template_str = json.dumps(template, indent=2, ensure_ascii=False)
             for add in added & added_en:  # new
                 template_str = template_str.replace(f'  "{add}":', f'//  "{add}":')
             for add in added - added_en:  # missing
@@ -226,7 +313,7 @@ class LocalizationDiffer:
                     template_str = template_str.replace(f'  "{new_ren}":',
                                                         f'// renamed "{old_ren}" to "{new_ren}"\n  "{new_ren}"')
             
-            templates[os.path.basename(file_name)] = (template_str, added - added_en)
+            templates[file_name] = (template_str, added - added_en)
         return templates
     
 def main():
@@ -238,6 +325,8 @@ def main():
     parser.add_argument("-c", "--commit", default="afea18f6f1cda5c8db8e31dfec8edf7e04624f90", help="Old commit to check against. Defaults to last")
     parser.add_argument("-m", "--maintainers", default="localization_maintainers.json", help="Path fo maintainers JSON")
     parser.add_argument("-t", "--template", default=".github/scripts/template.yml", help="Path to YAML markdown template")
+    parser.add_argument("-s", "--disable_mentions", default=False, help="Disable mention links")
+    parser.add_argument("-p", "--js_patch", default=False, help="Show git diff as json template (for larger repos)")
     # parser.add_argument("-", "--", default="", help="")
 
     args = parser.parse_args()

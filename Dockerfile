@@ -19,6 +19,7 @@ FROM cicirello/pyaction:4
 COPY requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
+COPY scripts/language_images.json /scripts/language_images.json
 COPY scripts/template.yml /scripts/template.yml
 COPY localization_differ.py /localization_differ.py
 COPY entrypoint.py /entrypoint.py

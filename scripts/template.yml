@@ -1,39 +1,40 @@
 main: "asdf"
-change_added: "- 🆕 Key '$key' added with text: '$value'"    
-change_removed: "- ❌ Key '$key' was removed"
-change_renamed: "- 🔑 Key '$key' was renamed to '$value'"
-change_modified: "- ✏️ Key '$key' changed from '$value_old' to '$value_new'"
-missing_warning: "- ⚠️ `$key` is missing!"
+change_added: "- 🆕 Key **`$key`** added with text: _'$value'_"    
+change_removed: "- ❌ Key **`$key`** was removed"
+change_renamed: "- 🔑 Key **`$key`** was renamed to _'$value'_"
+change_modified: "- ✏️ Key **`$key`** changed from _'$value_old'_ to _'$value_new'_"
+missing_warning: "- ⚠️ **`$key`** is missing!"
 issue_body: |
   The base localization file $url_base_locfile has been updated. 
   Please ensure translations are updated accordingly
 
-  Branch: [$branch](../tree/$branch)
-  Start Commit: $url_start_commit
-  Current Commit: $url_end_commit
+  **Branch**: [$branch](../tree/$branch)
+  **Commits**: $url_start_commit ... $url_end_commit
   
   ### Summary of changes:
 
-  $change_summary
+  $changes_renamed
+  $changes_added
+  $changes_changed
+  $changes_removed
 
-  CC:
+  Translators:
 
   $user_mentions
 
   $language_details
 localization_body: |
   <a name="$loc_file"></a>
-  ## ![$loc_file]($flag_url) $country_name ($loc_file)
+  ## $flag_url $country_name ($loc_file)
 
-  [✏️ Edit $loc_file on Github](../edit/$branch/assets/base/assets/localization/$loc_file)
+  [✏️ Edit $loc_file on Github](../edit/$branch/$base_dir/$loc_file)
 
   <details>
 
-  <summary> Template for <b>$loc_file</b></summary>
+  <summary> JSON Template for <b>$loc_file</b></summary>
 
 
   ```json
-  
   $json_template
   
   ```
@@ -41,4 +42,7 @@ localization_body: |
   </details>
 
   $warnings
+
+  
+  ## <a href="#top">🪜</a>
   

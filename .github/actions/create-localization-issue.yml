@@ -1,41 +1,4 @@
-# python-github-action-template
-A Github Action to generate Issues when base localization file is updated.
-This action assumes that localization files are simple JSON files with a dictionary containing key-value pairs.
-
-Example localization data structure: [Link](https://github.com/Mythical-Github/ue4ss_installer_gui/tree/dev/assets/base/assets/localization)
-
-Default input parameters:
-```yaml
-base-dir:
-  description: 'Directory containing localization files'
-  required: false
-  default: 'assets/base/assets/localization'
-base-file:
-  description: 'Native translation file'
-  required: false
-  default: 'en.json'
-branch:
-  description: 'Branch to operate on'
-  required: false
-  default: 'main'
-commit:
-  description: 'Old commit to check against. Defaults to last'
-  required: false
-  default: 'HEAD^'
-maintainers:
-  description: 'Path to maintainers JSON file'
-  required: false
-  default: 'localization_maintainers.json'
-template:
-  description: 'Path to YAML markdown template'
-  required: false
-  default: '/scripts/template.yml'
-```
-
-Example Workflow:
-
-```yaml
-name: Create localization help issue
+name: Create Localization Help Request
 
 on:
   workflow_dispatch:
@@ -54,14 +17,25 @@ on:
         description: 'Print mentions as string'
         type: choice
         options:
-        - 'true'
-        - 'false'
-        default: 'false'
+        - 'True'
+        - 'False'
+        default: 'False'
         required: true
+      js-patch:
+        description: 'use git diff for JSON templates (for large repos)'
+        required: true
+        type: choice
+        options:
+        - 'True'
+        - 'False'
+        default: 'False'
 
 jobs:
   call-external-python-action:
     runs-on: ubuntu-latest
+    outputs:
+      comments: ${{ steps.run_action.outputs.comments }}
+      issue_number: ${{ steps.create_issue.outputs.number }}
 
     steps:
       - name: Checkout your own repo
@@ -81,11 +55,11 @@ jobs:
           # maintainers: ""
           template: ${{ github.event.inputs.template }}
           disable-mentions: ${{ github.event.inputs.disable-mentions }}
-
+          js-patch: ${{ github.event.inputs.js-patch }}
       # - name: Print outputs
       #   run: echo "One ${{ steps.run_action.outputs.issue-title }} Two ${{ steps.run_action.outputs.issue-body }}"
-
       - name: Create issue
+        id: create_issue
         uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
@@ -93,4 +67,17 @@ jobs:
           body: ${{ steps.run_action.outputs.issue-body }}
           labels: |
             localization, automated, help wanted
-```
+  
+  create-issue-comments:
+    runs-on: ubuntu-latest
+    needs: [define-matrix, call-external-python-action]
+    strategy:
+      matrix:
+        comment: ${{ steps.run_action.outputs.comments }}
+    
+    steps:
+      - name: create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ needs.call-external-python-action.outputs.issue_number }}
+          body: ${{ matrix.comment }}
