@@ -317,11 +317,11 @@ class LocalizationDiffer:
 
             # Add comments to template
             template_str = json.dumps(template, indent=2, ensure_ascii=False)
-            edited_str = ""
+            edited_str = template_str
             for add in added & added_en:  # new
-                edited_str = template_str.replace(f'  "{add}":', f'  //  "{add}":')
+                edited_str = edited_str.replace(f'  "{add}":', f'  // "{add}":')
             for add in added - added_en:  # missing
-                edited_str = edited_str.replace(f'  "{add}":', f'  //⚠️  "{add}":')
+                edited_str = edited_str.replace(f'  "{add}":', f'  // ⚠️ missing key\n  // "{add}":')
             for (old_ren, new_ren) in renamed_en:
                 if new_ren not in added:
                     edited_str = edited_str.replace(f'"{new_ren}":',
