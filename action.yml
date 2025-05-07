@@ -112,6 +112,7 @@ runs:
         name: comments
 
     - name: Create issue comments
+      shell: bash
       env:
         ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
