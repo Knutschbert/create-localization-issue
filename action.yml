@@ -68,16 +68,10 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Set GitHub Path
-      run: echo "$GITHUB_ACTION_PATH" && echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
-      shell: bash
+    - name: Dump vars context
       env:
-        GITHUB_ACTION_PATH: ${{ github.action_path }}
-    - name: Set GitHub action_ref 
-      run: echo "$GITHUB_ACTION_REF" 2 $GITHUB_ACTION_REF2
-      shell: bash
-      env:
-        GITHUB_ACTION_REF: ${{ github.action_ref  }}
+        VARS_JSON: ${{ toJSON(vars) }}
+      run: echo "${VARS_JSON}"
 
     - name: Run Python action (local)
       id: run_action
