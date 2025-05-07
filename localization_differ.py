@@ -136,7 +136,7 @@ class LocalizationDiffer:
             # self.comments.append(json.dumps(language_template, ensure_ascii=False))
             if self.settings.use_comments:
                 self.comments.append(language_template)
-                self.comments_dict[key] = language_template
+                self.comments_dict[base_name] = language_template
                 print('adding comment')
         
         for k, v in self.comments_dict.items():
