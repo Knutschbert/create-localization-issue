@@ -103,7 +103,8 @@ This workflow will run the python script and create a new issue/comments.
 ---
 
 > [!NOTE]
-> _If you prefer to handle the issue/comment creation yourself, use the action in `.github/actions/docker-action-folder`_
+> _If you prefer to handle the issue/comment creation yourself, use this action to generate issue body and comments:
+> `.github/actions/docker-action-folder`_
 
 ## Inputs
 
@@ -125,6 +126,9 @@ Default input parameters:
 - When working with many or large localization files, `use-comments` option might be needed (due to length limit of the issue body)
 - Small flags next to maintainer names link to the corresponting comment/section
 - 🪜 takes you back to the top
+- Flag icon and descriptive language names require [ISO 639](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) naming
+  - both `alpha-2` _(de)_ and `alpha-3` _(deu)_ names are supported
+  - if it fails, treats name as country code and tries `alpha-3` for language (e.g. `ua.json` and `uk.json` will both work)
 
 
 ## Translator JSON templates
