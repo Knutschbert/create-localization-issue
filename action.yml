@@ -1,8 +1,9 @@
 name: 'create-localization-issue'
 description: 'Create an issue when new localization data is available'
 branding:
-  icon: 'book-open'
+  icon: 'flag-checkered'
   color: 'green'
+
 inputs:
   base-dir:
     description: 'Directory containing localization files'
@@ -52,6 +53,10 @@ inputs:
     - 'True'
     - 'False'
     default: 'False'
+  GITHUB_TOKEN:
+    description: 'Token'
+    required: true
+    default: 'False'
 outputs:
   issue-title:
     description: 'Generated title'
@@ -59,25 +64,49 @@ outputs:
     description: 'Generated localization diff body'
   comments:
     description: 'List of issue comments'
+
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - --base_dir
-    - ${{ inputs.base-dir }}
-    - --base_file
-    -  ${{ inputs.base-file }}
-    - --branch
-    -  ${{ inputs.branch }}
-    - --commit
-    -  ${{ inputs.commit }}
-    - --maintainers
-    -  ${{ inputs.maintainers }}
-    - --template
-    -  ${{ inputs.template }}
-    - --disable_mentions
-    -  ${{ inputs.disable-mentions }}
-    - --js_patch
-    -  ${{ inputs.js-patch }}
-    - --use_comments
-    -  ${{ inputs.use-comments }}
+  using: "composite"
+  steps:
+    - name: Run Python action (local)
+      id: run_action
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@dev
+      with:
+        base-dir: ${{ inputs.base-dir }} 
+        base-file: ${{ inputs.base-file }}
+        branch: ${{ inputs.branch }}
+        commit: ${{ inputs.commit }}
+        maintainers: ${{ inputs.maintainers }}
+        template: ${{ inputs.template }}
+        disable-mentions: ${{ inputs.disable-mentions }}
+        js-patch: ${{ inputs.js-patch }}
+        use-comments: ${{ inputs.use-comments }}
+
+    - name: Create GitHub issue
+      id: create_issue
+      uses: dacbd/create-issue-action@main
+      with:
+        token: ${{ inputs.GITHUB_TOKEN }}
+        title: ${{ steps.run_action.outputs.issue-title }}
+        body: ${{ steps.run_action.outputs.issue-body }}
+        labels: |
+          localization, automated, help wanted
+
+    - name: Create issue comments
+      shell: bash
+      env:
+        COMMENTS: ${{ steps.run_action.outputs.comments }}
+        ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+      run: |
+        echo "$COMMENTS" | jq -c '.[]' | while read -r comment_json; do
+          comment=$(echo "$comment_json" | jq -r '.')
+          tmpfile=$(mktemp)
+          jq -n --arg body "$comment" '{body: $body}' > "$tmpfile"
+          gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/comments \
+            --method POST \
+            --header "Authorization: Bearer $GITHUB_TOKEN" \
+            --header "Accept: application/vnd.github.v3+json" \
+            --input "$tmpfile"
+          rm "$tmpfile"
+        done
