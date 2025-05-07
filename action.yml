@@ -71,6 +71,11 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: mkdir
+      shell: bash
+      run: |
+        mkdir comments
+
     - name: Run Python action (local)
       id: run_action
       uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@main
