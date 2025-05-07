@@ -1,0 +1,8 @@
+{
+    "de.json": ["de_chad"],
+    "en.json": ["en_chad"],
+    "es.json": ["es_chad", "ja_chad"],
+    "fr.json": ["fr_chad", "ja_chad"],
+    "ja.json": ["ja_chad"],
+    "ua.json": ["ua_chad", "@knutschbert"]
+}

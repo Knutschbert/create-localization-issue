@@ -52,7 +52,7 @@ jobs:
           base-file: "en.json"
           branch: ${{ github.ref }}
           commit: ${{ github.event.inputs.commit }}
-          maintainers: "translators.json"
+          maintainers: "translators_installer.json"
           template: ${{ github.event.inputs.template }}
           disable-mentions: ${{ github.event.inputs.disable-mentions }}
           js-patch: ${{ github.event.inputs.js-patch }}
