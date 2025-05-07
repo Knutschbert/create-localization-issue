@@ -70,7 +70,7 @@ runs:
   steps:
     - name: Run Python action (local)
       id: run_action
-      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ env.ACTION_REF }}
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ github.action_ref }}
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
@@ -81,8 +81,6 @@ runs:
         disable-mentions: ${{ inputs.disable-mentions }}
         js-patch: ${{ inputs.js-patch }}
         use-comments: ${{ inputs.use-comments }}
-      env:
-        ACTION_REF: ${{ github.action_ref }}
 
     - name: Create GitHub issue
       id: create_issue
