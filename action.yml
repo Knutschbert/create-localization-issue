@@ -82,7 +82,7 @@ runs:
 
     - name: Run Python action (local)
       id: run_action
-      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@main
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@v0
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}

@@ -2,7 +2,7 @@
 A Github Action to generate Issues when base localization file is updated.
 Generated Issues feature translator @ mentions as well as JSON templates which translators can directly use.
 
-This action assumes that localization files are simple JSON files with a dictionary containing key-value pairs.
+This action assumes that localization files are simple JSON files with a dictionary containing string key-value pairs (`Dict[str,str]`).
 
 Example localization directory: [Link](https://github.com/Mythical-Github/ue4ss_installer_gui/tree/dev/assets/base/assets/localization)
 
@@ -106,6 +106,9 @@ This workflow will run the python script and create a new issue/comments.
 </details>
 
 ---
+
+> [!Important]
+> When dealing with a large filebase or many keys, consider turning `use-comments` on
 
 > [!NOTE]
 > _If you prefer to handle the issue/comment creation yourself, use this action to generate issue body and comments:
