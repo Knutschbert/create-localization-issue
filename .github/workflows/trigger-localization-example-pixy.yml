@@ -6,7 +6,7 @@ on:
       commit:
         description: 'Commit to compare to (last by default)'
         type: string
-        default: 'ddd1fa9a83e75f17e39a10aef66cb66a7427ff2f'
+        default: '9405b236240511f3df1f2475cda04ca16450e36b'
         required: true
       template:
         description: 'Custom YAML template for Markdown (if needed)'
@@ -52,7 +52,7 @@ jobs:
           base-file: "en.json"
           branch: examples
           commit: ${{ github.event.inputs.commit }}
-          maintainers: "translators.json"
+          maintainers: "translators_pixy.json"
           template: ${{ github.event.inputs.template }}
           disable-mentions: ${{ github.event.inputs.disable-mentions }}
           js-patch: ${{ github.event.inputs.js-patch }}
