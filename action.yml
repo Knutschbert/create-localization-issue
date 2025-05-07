@@ -57,6 +57,9 @@ inputs:
     description: 'Token'
     required: true
     default: 'False'
+  sub-ref:
+    description: 'Token'
+    required: true
 outputs:
   issue-title:
     description: 'Generated title'
@@ -75,7 +78,7 @@ runs:
 
     - name: Run Python action (local)
       id: run_action
-      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@devel
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ inputs.sub-ref }}
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
