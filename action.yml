@@ -98,7 +98,7 @@ runs:
     - name: Write comments to file
       shell: bash
       run: |
-        echo '${{ steps.run_action.outputs.comments }}' > comments.json
+        echo "${{ steps.run_action.outputs.comments }}" | jq '.' > comments.json
 
     - name: Create issue comments
       shell: bash
