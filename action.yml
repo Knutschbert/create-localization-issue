@@ -60,6 +60,10 @@ inputs:
   sub-ref:
     description: 'Token'
     required: true
+  labels:
+    description: 'Issue, labels'
+    required: false
+    default: 'localization, automated, help wanted'
 outputs:
   issue-title:
     description: 'Generated title'
@@ -99,7 +103,7 @@ runs:
         title: ${{ steps.run_action.outputs.issue-title }}
         body: ${{ steps.run_action.outputs.issue-body }}
         labels: |
-          localization, automated, help wanted
+          ${{ inputs.labels }}
 
     - name: List comments
       if: ${{ inputs.use-comments == 'True' }}

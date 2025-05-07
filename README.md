@@ -38,7 +38,7 @@ This workflow will run the python script and create a new issue/comments.
 
 
   ```yaml
-  name: (EZ) Create Localization Help Issue
+  name: Create Localization Help Issue
 
   on:
     workflow_dispatch:
@@ -71,6 +71,10 @@ This workflow will run the python script and create a new issue/comments.
           type: choice
           options: [ 'True', 'False' ]
           default: 'False'
+        labels:
+          description: 'Issue, labels'
+          required: false
+          default: 'localization, automated, help wanted'
 
   jobs:
     create-localization-request:
@@ -97,6 +101,7 @@ This workflow will run the python script and create a new issue/comments.
             disable-mentions: ${{ github.event.inputs.disable-mentions }}
             js-patch: ${{ github.event.inputs.js-patch }}
             use-comments: ${{ github.event.inputs.use-comments }}
+            labels: ${{ github.event.inputs.labels }}
   ```
 </details>
 
@@ -120,6 +125,7 @@ Default input parameters:
 | **disable-mentions** | False                           | Output mentions as text (dry-run)                                                  |
 | **js-patch**         | False                           | Use diff output for translator templates                                           |
 | **use-comments**     | False                           | Show language templates as comments. if False, templates will appear in issue body |
+| **labels**     | localization, automated, help wanted    | Comma separated list of issue labels |
 
 
 ## Notes
