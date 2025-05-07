@@ -1,5 +1,6 @@
-# python-github-action-template
+# create-localization-issue
 A Github Action to generate Issues when base localization file is updated.
+Generated Issues feature translator @ mentions as well as JSON templates which translators can directly use.
 
 This action assumes that localization files are simple JSON files with a dictionary containing key-value pairs.
 
@@ -23,7 +24,7 @@ Example localization directory: [Link](https://github.com/Mythical-Github/ue4ss_
 ## Setup
 This workflow will run the python script and create a new issue/comments.
 
-Create a file containing github user tags of maintainers (default: `localization_maintainers.json`):
+Create a file containing github user tags of translators (default: `localization_maintainers.json`):
 ```json
 {
     "de.json": ["@knutschbert"],
