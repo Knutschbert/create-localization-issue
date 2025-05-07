@@ -101,12 +101,14 @@ runs:
         labels: |
           localization, automated, help wanted
 
-    - name: List comment
+    - name: List comments
+      if: ${{ inputs.use-comments == 'True' }}
       shell: bash
       run: |
         ls -l comments/*.*
           
     - name: Post issue comments from markdown files
+      if: ${{ inputs.use-comments == 'True' }}
       shell: bash
       env:
         ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
