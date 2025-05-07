@@ -1,4 +1,4 @@
-name: (Installer) Create Localization Help Issue
+name: (Pixy) Create Localization Help Issue
 
 on:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.ref }}
+          ref: examples
 
       - name: Run Python Action from external repo
         id: run_action
@@ -50,7 +50,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           base-dir: "assets/pixy-mood-tracker-app"
           base-file: "en.json"
-          branch: ${{ github.ref }}
+          branch: examples
           commit: ${{ github.event.inputs.commit }}
           maintainers: "translators.json"
           template: ${{ github.event.inputs.template }}
