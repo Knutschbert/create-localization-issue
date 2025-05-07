@@ -70,7 +70,7 @@ runs:
   steps:
     - name: Run Python action (local)
       id: run_action
-      uses: ./docker-action-folder
+      uses: ./.github/actions/docker-action-folder
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
