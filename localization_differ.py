@@ -37,6 +37,8 @@ class Settings:
     disable_mentions: bool
     js_patch: bool
     use_comments: bool
+    images_json: str
+    output_dir: str
 
 class LocalizationDiffer:
 
@@ -80,7 +82,7 @@ class LocalizationDiffer:
         
         self.tmpl = self.load_templates()
         self.current_en = self.load_json(self.base_file_path)
-        self.lang_images = self.load_json("/scripts/language_images.json")
+        self.lang_images = self.load_json(self.settings.images_json)
         self.comparison = self.compare_dicts(self.prev_en, self.current_en)
         self.format_changes_str()
 
@@ -139,11 +141,11 @@ class LocalizationDiffer:
                 self.comments_dict[base_name] = language_template
                 print('adding comment')
         
-        if not os.path.exists('/github/workspace/comments'):
+        if not os.path.exists(self.settings.output_dir):
             print('Comments Folder not found, creating')
-            os.makedirs('/github/workspace/comments')
+            os.makedirs(self.settings.output_dir)
         for k, v in self.comments_dict.items():
-            file_name = f'/github/workspace/comments/{k}.md'
+            file_name = f'{self.settings.output_dir}/{k}.md'
             with open(file_name, 'w', encoding='utf-8') as file:
                 print('Saved', file_name)
                 file.write(v)
@@ -311,19 +313,21 @@ class LocalizationDiffer:
             for name_old, name_new in renamed_en:
                 if name_old in js_data:
                     template[name_new] = js_data[name_old]
+                    added.remove(name_new)
 
             # Add comments to template
             template_str = json.dumps(template, indent=2, ensure_ascii=False)
+            edited_str = ""
             for add in added & added_en:  # new
-                template_str = template_str.replace(f'  "{add}":', f'//  "{add}":')
+                edited_str = template_str.replace(f'  "{add}":', f'  //  "{add}":')
             for add in added - added_en:  # missing
-                template_str = template_str.replace(f'  "{add}":', f'//⚠️  "{add}":')
+                edited_str = edited_str.replace(f'  "{add}":', f'  //⚠️  "{add}":')
             for (old_ren, new_ren) in renamed_en:
                 if new_ren not in added:
-                    template_str = template_str.replace(f'  "{new_ren}":',
-                                                        f'// renamed "{old_ren}" to "{new_ren}"\n  "{new_ren}"')
+                    edited_str = edited_str.replace(f'"{new_ren}":',
+                                                        f'// renamed "{old_ren}" to "{new_ren}"\n  "{new_ren}":')
             
-            templates[file_name] = (template_str, added - added_en)
+            templates[file_name] = (edited_str, added - added_en)
         return templates
     
 def main():
@@ -335,14 +339,16 @@ def main():
     parser.add_argument("-c", "--commit", default="afea18f6f1cda5c8db8e31dfec8edf7e04624f90", help="Old commit to check against. Defaults to last")
     parser.add_argument("-m", "--maintainers", default="localization_maintainers.json", help="Path fo maintainers JSON")
     parser.add_argument("-t", "--template", default=".github/scripts/template.yml", help="Path to YAML markdown template")
-    parser.add_argument("-s", "--disable_mentions", default=False, help="Disable mention links")
-    parser.add_argument("-p", "--js_patch", default=False, help="Show git diff as json template (for larger repos)")
+    parser.add_argument("-s", "--disable_mentions", default="False", help="Disable mention links")
+    parser.add_argument("-p", "--js_patch", default="False", help="Show git diff as json template (for larger repos)")
+    parser.add_argument("-u", "--use_comments", default="false", help="Show templates as comments")
+    parser.add_argument("-j", "--images_json", default="/scripts/language_images.json", help="Language images json")
+    parser.add_argument("-o", "--output_dir", default="/github/workspace/comments", help="output folder")
     # parser.add_argument("-", "--", default="", help="")
 
     args = parser.parse_args()
     settings = Settings(**args.__dict__)
     pprint(settings)
-
     # EN_PATH = Path(settings.base_dir) / settings.base_file
     # EN_PATH_F = str(EN_PATH).replace('\\', '/')
     settings.branch = settings.branch.split('/')[-1]  # clean up ref
@@ -351,10 +357,13 @@ def main():
             settings.commit = "HEAD^^"
         else:
             settings.commit = "HEAD^"
+    settings.disable_mentions = settings.disable_mentions.lower() == 'true'
+    settings.js_patch = settings.js_patch.lower() == 'true'
+    settings.use_comments = settings.use_comments.lower() == 'true'
             
     processor = LocalizationDiffer(settings)
     processor.initialize()
-    issue_body, issue_title = processor.process()
+    issue_body, issue_title, comments = processor.process()
     with open('out.md', 'w', encoding='utf-8') as file:
         file.write(issue_body)
         file.close()
