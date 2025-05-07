@@ -35,6 +35,8 @@ if __name__ == "__main__" :
     parser.add_argument("-s", "--disable_mentions", default="false", help="Disable mention links")
     parser.add_argument("-p", "--js_patch", default="false", help="Show git diff as json template (for larger repos)")
     parser.add_argument("-u", "--use_comments", default="false", help="Show templates as comments")
+    parser.add_argument("-j", "--images_json", default="/scripts/language_images.json", help="Language images json")
+    parser.add_argument("-o", "--output_dir", default="/github/workspace/comments", help="output folder")
     # parser.add_argument("-", "--", default="", help="")
 
     args = parser.parse_args()
