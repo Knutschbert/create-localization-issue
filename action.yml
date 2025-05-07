@@ -70,7 +70,7 @@ runs:
   steps:
     - name: Run Python action (local)
       id: run_action
-      uses: ./.github/actions/docker-action-folder
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@dev
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
