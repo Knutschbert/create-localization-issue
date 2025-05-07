@@ -68,9 +68,20 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Set GitHub Path
+      run: echo "$GITHUB_ACTION_PATH" && echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+      shell: bash
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+    - name: Set GitHub action_ref 
+      run: echo "$GITHUB_ACTION_REF"
+      shell: bash
+      env:
+        GITHUB_ACTION_REF: ${{ github.action_ref  }}
+
     - name: Run Python action (local)
       id: run_action
-      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@${{ github.action_ref }}
+      uses: Knutschbert/create-localization-issue/.github/actions/docker-action-folder@devel
       with:
         base-dir: ${{ inputs.base-dir }} 
         base-file: ${{ inputs.base-file }}
