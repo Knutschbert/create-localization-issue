@@ -139,8 +139,11 @@ class LocalizationDiffer:
                 self.comments_dict[base_name] = language_template
                 print('adding comment')
         
+        if not os.path.exists('/github/workspace/comments'):
+            print('Comments Folder not found, creating')
+            os.makedirs('/github/workspace/comments')
         for k, v in self.comments_dict.items():
-            file_name = f'comments/{k}.md'
+            file_name = f'/github/workspace/comments/{k}.md'
             with open(file_name, 'w', encoding='utf-8') as file:
                 print('Saved', file_name)
                 file.write(v)
