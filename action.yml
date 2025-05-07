@@ -85,10 +85,6 @@ runs:
         js-patch: ${{ inputs.js-patch }}
         use-comments: ${{ inputs.use-comments }}
 
-    - name: List files
-      shell: bash
-      run: |
-        ls -l comments/*.*
 
     - name: Create GitHub issue
       id: create_issue
@@ -99,37 +95,21 @@ runs:
         body: ${{ steps.run_action.outputs.issue-body }}
         labels: |
           localization, automated, help wanted
-          
-    - name: Save comments to file
+
+    - name: List comment
       shell: bash
       run: |
-        echo '${{ steps.run_action.outputs.comments }}' > comments.json
-
-    - name: Upload comments file
-      uses: actions/upload-artifact@v4
-      with:
-        name: comments
-        path: comments.json
-
-    - name: Download comments file
-      uses: actions/download-artifact@v4
-      with:
-        name: comments
-
-    - name: Create issue comments
-      shell: bash
+        ls -l comments/*.*
+          
+    - name: Post issue comments from markdown files
       env:
         ISSUE_NUMBER: ${{ steps.create_issue.outputs.number }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
       run: |
-        cat comments.json | jq -c '.[]' | while read -r comment_json; do
-          comment=$(echo "$comment_json" | jq -r '.')
-          tmpfile=$(mktemp)
-          jq -n --arg body "$comment" '{body: $body}' > "$tmpfile"
+        for file in comments/*.md; do
           gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/comments \
             --method POST \
             --header "Authorization: Bearer $GITHUB_TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --input "$tmpfile"
-          rm "$tmpfile"
+            --raw-field body<"$file"
         done
